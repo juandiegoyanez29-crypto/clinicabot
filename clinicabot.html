@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClinicaBot</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--border:#e2e0d8;--border2:#ccc9bd;
+  --text:#1a1917;--text2:#6b6860;--text3:#a09d95;
+  --teal:#1D9E75;--teal-l:#e1f5ee;--teal-d:#0F6E56;
+  --red:#E24B4A;--red-l:#fff0f0;--blue:#378ADD;--blue-l:#e6f1fb;
+  --amber:#BA7517;--amber-l:#faeeda;--radius:10px;--rsm:6px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+.sidebar{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:10;}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);}
+.logo-row{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:32px;height:32px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;flex-shrink:0;}
+.logo-name{font-size:15px;font-weight:600;letter-spacing:-0.3px;}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.nav{padding:12px 10px;flex:1;}
+.nav-sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:8px 10px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--rsm);font-size:13.5px;color:var(--text2);cursor:pointer;transition:all .15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:var(--teal-l);color:var(--teal-d);font-weight:500;}
+.nav-item .ico{font-size:15px;width:18px;text-align:center;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);}
+.dot-on{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:6px;}
+.main{margin-left:230px;flex:1;padding:28px;min-height:100vh;}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;}
+.page-title{font-size:20px;font-weight:600;letter-spacing:-0.4px;}
+.page-sub{font-size:13px;color:var(--text3);margin-top:2px;}
+.btn{font-family:'DM Sans',sans-serif;border-radius:var(--rsm);padding:9px 16px;font-size:13.5px;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:all .15s;font-weight:500;}
+.btn:hover{background:var(--surface2);}
+.btn-p{background:var(--teal);border-color:var(--teal);color:white;}
+.btn-p:hover{background:var(--teal-d);}
+.panel{display:none;}.panel.active{display:block;}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.m-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.m-val{font-size:28px;font-weight:600;letter-spacing:-1px;line-height:1;}
+.m-sub{font-size:12px;color:var(--text3);margin-top:6px;}
+.mv-r{color:var(--red);}.mv-t{color:var(--teal);}
+.two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:18px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.badge{font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:600;display:inline-block;}
+.bc{background:var(--teal-l);color:var(--teal-d);}
+.br{background:var(--blue-l);color:#185FA5;}
+.be{background:var(--red-l);color:#A32D2D;}
+.appt-list{display:flex;flex-direction:column;gap:8px;}
+.appt{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:var(--rsm);transition:background .15s;cursor:pointer;}
+.appt:hover{background:var(--surface2);}
+.adot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.dc{background:var(--teal);}.dr{background:var(--blue);}.de{background:var(--red);}
+.a-info{flex:1;min-width:0;}
+.a-name{font-size:13.5px;font-weight:500;}
+.a-det{font-size:12px;color:var(--text2);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.a-time{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;text-align:right;}
+.patient-list{display:flex;flex-direction:column;gap:6px;}
+.p-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:var(--rsm);cursor:pointer;transition:all .15s;}
+.p-row:hover{background:var(--surface2);border-color:var(--border2);}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.at{background:var(--teal-l);color:var(--teal-d);}
+.ab{background:var(--blue-l);color:#185FA5;}
+.aa{background:var(--amber-l);color:var(--amber);}
+.ar{background:var(--red-l);color:#A32D2D;}
+.pn{font-size:13.5px;font-weight:500;}
+.ps{font-size:12px;color:var(--text2);margin-top:1px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-h{font-size:10px;font-weight:600;color:var(--text3);text-align:center;padding:4px;text-transform:uppercase;letter-spacing:.05em;}
+.cal-d{aspect-ratio:1;border-radius:var(--rsm);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer;transition:background .15s;position:relative;}
+.cal-d:hover{background:var(--surface2);}
+.cal-d.today{background:var(--teal);color:white;font-weight:600;}
+.cal-d.hd::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);position:absolute;bottom:3px;}
+.cal-d.today.hd::after{background:white;}
+.cal-d.ed::after{background:var(--red);}
+.cal-d.empty{color:var(--text3);opacity:.3;cursor:default;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;}.fg.full{grid-column:1/-1;}
+.fg label{font-size:12px;font-weight:500;color:var(--text2);}
+.fg input,.fg select,.fg textarea{font-family:'DM Sans',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--rsm);font-size:13.5px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.h-list{display:flex;flex-direction:column;gap:10px;}
+.h-item{padding:14px;border:1px solid var(--border);border-radius:var(--rsm);border-left:3px solid var(--teal);}
+.h-item.em{border-left-color:var(--red);}
+.h-meta{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.h-tit{font-size:13.5px;font-weight:500;margin-bottom:5px;}
+.h-note{font-size:12.5px;color:var(--text2);line-height:1.6;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:20px;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.sw{display:flex;gap:10px;margin-bottom:14px;}
+.sw input{flex:1;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--rsm);font-size:13.5px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);outline:none;}
+.sw input:focus{border-color:var(--teal);}
+.ftags{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.ftag{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border2);cursor:pointer;transition:all .15s;background:var(--surface);color:var(--text2);}
+.ftag.active{background:var(--teal);border-color:var(--teal);color:white;}
+.profile-hdr{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.profile-av{width:56px;height:56px;border-radius:50%;font-size:20px;font-weight:600;}
+.profile-name{font-size:18px;font-weight:600;letter-spacing:-0.3px;}
+.profile-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+.info-tbl{width:100%;font-size:13px;border-collapse:collapse;}
+.info-tbl td{padding:7px 0;border-bottom:1px solid var(--border);}
+.info-tbl td:first-child{color:var(--text3);width:42%;}
+.info-tbl td:last-child{color:var(--text);font-weight:500;text-align:right;}
+.info-tbl tr:last-child td{border-bottom:none;}
+.wa-phone{background:#f0ebe1;border-radius:14px;overflow:hidden;border:1px solid var(--border);}
+.wa-hdr{background:#075e54;padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.wa-av{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;}
+.wa-nm{color:white;font-size:14px;font-weight:500;}
+.wa-st{color:rgba(255,255,255,.7);font-size:11px;}
+.wa-body{padding:14px;display:flex;flex-direction:column;gap:8px;min-height:260px;}
+.wm{max-width:85%;padding:9px 12px;border-radius:10px;font-size:12.5px;line-height:1.5;}
+.wm.bot{background:white;color:#333;align-self:flex-start;border-radius:0 10px 10px 10px;}
+.wm.usr{background:#dcf8c6;color:#333;align-self:flex-end;border-radius:10px 10px 0 10px;}
+.wt{font-size:10px;color:#999;margin-top:3px;text-align:right;}
+.wa-ir{padding:10px 14px;background:#f0ebe1;border-top:1px solid #d9d3c7;display:flex;gap:8px;}
+.wa-ir input{flex:1;border:none;background:white;border-radius:20px;padding:8px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;}
+.wa-send{background:var(--teal);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;color:white;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:12px 20px;border-radius:var(--rsm);font-size:13.5px;font-weight:500;z-index:300;display:none;}
+.empty{text-align:center;padding:32px 20px;color:var(--text3);font-size:13.5px;}
+.loading{text-align:center;padding:20px;color:var(--text3);font-size:13px;}
+.cmd{padding:12px;border:1px solid var(--border);border-radius:var(--rsm);margin-bottom:8px;}
+.cmd-l{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.cmd-t{font-size:13px;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-row">
+      <div class="logo-icon">🐾</div>
+      <div><div class="logo-name">ClinicaBot</div><div class="logo-sub">Panel de gestión</div></div>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-sec">Principal</div>
+    <div class="nav-item active" onclick="goTo('dashboard')"><span class="ico">⊞</span> Dashboard</div>
+    <div class="nav-item" onclick="goTo('agenda')"><span class="ico">📅</span> Agenda</div>
+    <div class="nav-item" onclick="goTo('pacientes')"><span class="ico">🐶</span> Pacientes</div>
+    <div class="nav-item" onclick="goTo('historial')"><span class="ico">📋</span> Historial</div>
+    <div class="nav-item" onclick="goTo('bot')"><span class="ico">💬</span> Bot WhatsApp</div>
+  </div>
+  <div class="sidebar-footer"><span class="dot-on"></span>Firebase conectado</div>
+</nav>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div id="panel-dashboard" class="panel active">
+    <div class="topbar">
+      <div><div class="page-title">Dashboard</div><div class="page-sub" id="fecha-hoy"></div></div>
+      <button class="btn btn-p" onclick="abrirCita()">+ Nueva cita</button>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="m-label">Citas hoy</div><div class="m-val" id="m-hoy">–</div><div class="m-sub">agendadas</div></div>
+      <div class="metric"><div class="m-label">Emergencias</div><div class="m-val mv-r" id="m-emerg">–</div><div class="m-sub">alta prioridad</div></div>
+      <div class="metric"><div class="m-label">Pacientes</div><div class="m-val mv-t" id="m-pac">–</div><div class="m-sub">registrados</div></div>
+      <div class="metric"><div class="m-label">Total citas</div><div class="m-val" id="m-total">–</div><div class="m-sub">en sistema</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div class="card-title">Citas de hoy</div><div id="dash-citas" class="appt-list"><div class="loading">Cargando...</div></div></div>
+      <div class="card"><div class="card-title">Últimos pacientes</div><div id="dash-pacs" class="patient-list"><div class="loading">Cargando...</div></div></div>
+    </div>
+  </div>
+
+  <!-- AGENDA -->
+  <div id="panel-agenda" class="panel">
+    <div class="topbar">
+      <div><div class="page-title">Agenda</div><div class="page-sub">Citas y turnos</div></div>
+      <button class="btn btn-p" onclick="abrirCita()">+ Nueva cita</button>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Marzo 2026</div>
+        <div class="cal-grid">
+          <div class="cal-h">Lu</div><div class="cal-h">Ma</div><div class="cal-h">Mi</div><div class="cal-h">Ju</div><div class="cal-h">Vi</div><div class="cal-h">Sá</div><div class="cal-h">Do</div>
+          <div class="cal-d empty">24</div><div class="cal-d empty">25</div><div class="cal-d empty">26</div><div class="cal-d empty">27</div><div class="cal-d empty">28</div><div class="cal-d empty">1</div><div class="cal-d empty">2</div>
+          <div class="cal-d hd">3</div><div class="cal-d hd">4</div><div class="cal-d">5</div><div class="cal-d hd">6</div><div class="cal-d hd">7</div><div class="cal-d">8</div><div class="cal-d">9</div>
+          <div class="cal-d hd">10</div><div class="cal-d hd">11</div><div class="cal-d hd">12</div><div class="cal-d ed hd">13</div><div class="cal-d hd">14</div><div class="cal-d">15</div><div class="cal-d">16</div>
+          <div class="cal-d hd">17</div><div class="cal-d hd">18</div><div class="cal-d hd">19</div><div class="cal-d hd">20</div><div class="cal-d hd">21</div><div class="cal-d">22</div><div class="cal-d today hd">23</div>
+          <div class="cal-d hd">24</div><div class="cal-d hd">25</div><div class="cal-d">26</div><div class="cal-d hd">27</div><div class="cal-d">28</div><div class="cal-d">29</div><div class="cal-d">30</div>
+          <div class="cal-d">31</div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--text2);">
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;"></span>Cita</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;"></span>Emergencia</span>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Todas las citas</div><div id="agenda-lista" class="appt-list"><div class="loading">Cargando...</div></div></div>
+    </div>
+  </div>
+
+  <!-- PACIENTES -->
+  <div id="panel-pacientes" class="panel">
+    <div class="topbar">
+      <div><div class="page-title">Pacientes</div><div class="page-sub">Base de datos</div></div>
+      <button class="btn btn-p" onclick="abrirPaciente()">+ Nuevo paciente</button>
+    </div>
+    <div class="sw"><input type="text" id="search-input" placeholder="Buscar por nombre o dueño..." oninput="filtrarPacientes()"></div>
+    <div class="ftags">
+      <div class="ftag active" onclick="setFiltro('todos',this)">Todos</div>
+      <div class="ftag" onclick="setFiltro('Perro',this)">Perros</div>
+      <div class="ftag" onclick="setFiltro('Gato',this)">Gatos</div>
+      <div class="ftag" onclick="setFiltro('Exótico',this)">Exóticos</div>
+      <div class="ftag" onclick="setFiltro('Ave',this)">Aves</div>
+    </div>
+    <div class="card"><div id="pacientes-lista" class="patient-list"><div class="loading">Cargando...</div></div></div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="panel-historial" class="panel">
+    <div class="topbar">
+      <div><div class="page-title" id="hist-titulo">Historial</div><div class="page-sub" id="hist-sub">Seleccioná un paciente</div></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" onclick="goTo('pacientes')">← Pacientes</button>
+        <button class="btn btn-p" onclick="abrirNota()" id="btn-nota" style="display:none;">+ Agregar nota</button>
+      </div>
+    </div>
+    <div class="two-col" id="hist-content" style="display:none;">
+      <div class="card"><div class="card-title">Ficha del paciente</div><div id="hist-ficha"></div></div>
+      <div class="card"><div class="card-title">Historial de visitas <span id="hist-count" style="font-size:11px;color:var(--text3);font-weight:400;"></span></div><div id="hist-visitas" class="h-list"></div></div>
+    </div>
+    <div id="hist-empty" class="card"><div class="empty">Seleccioná un paciente desde la sección Pacientes para ver su historial.</div></div>
+  </div>
+
+  <!-- BOT -->
+  <div id="panel-bot" class="panel">
+    <div class="topbar">
+      <div><div class="page-title">Bot WhatsApp</div><div class="page-sub">Demo interactiva</div></div>
+      <span class="badge bc" style="font-size:12px;padding:6px 14px;">Simulación</span>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Así ve el cliente</div>
+        <div class="wa-phone">
+          <div class="wa-hdr"><div class="wa-av">CV</div><div><div class="wa-nm">Clínica Veterinaria</div><div class="wa-st">en línea</div></div></div>
+          <div class="wa-body" id="wa-msgs">
+            <div class="wm bot">¡Hola! Soy el asistente de la clínica 🐾<br>¿En qué puedo ayudarte?<br><br>1️⃣ Agendar cita<br>2️⃣ Ver mis turnos<br>3️⃣ Historial de mascota<br>4️⃣ Es una emergencia<div class="wt">ahora</div></div>
+          </div>
+          <div class="wa-ir">
+            <input type="text" id="wa-input" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')enviarWA()">
+            <button class="wa-send" onclick="enviarWA()">▶</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Comandos disponibles</div>
+        <div class="cmd"><div class="cmd-l">Historial</div><div class="cmd-t">"historial del chancho" · "ficha de firulais"</div></div>
+        <div class="cmd"><div class="cmd-l">Agendar</div><div class="cmd-t">"quiero turno" · "necesito consulta"</div></div>
+        <div class="cmd"><div class="cmd-l">Emergencia</div><div class="cmd-t">"emergencia" · "es urgente" → alerta al vet</div></div>
+        <div class="cmd"><div class="cmd-l">Mis citas</div><div class="cmd-t">"mis turnos" · "tengo cita esta semana?"</div></div>
+        <div style="margin-top:14px;padding:14px;background:var(--teal-l);border-radius:var(--rsm);">
+          <div style="font-size:12px;font-weight:600;color:var(--teal-d);margin-bottom:4px;">💡 Probalo ahora</div>
+          <div style="font-size:12px;color:var(--teal-d);">Escribí "historial del chancho" o "emergencia" en el chat.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CITA -->
+<div class="modal-bg" id="modal-cita">
+  <div class="modal">
+    <div class="modal-title">📅 Nueva cita</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nombre del paciente</label><input type="text" id="c-nombre" placeholder="Ej: Firulais"></div>
+      <div class="fg"><label>Especie</label><select id="c-especie"><option>Perro</option><option>Gato</option><option>Exótico</option><option>Ave</option><option>Otro</option></select></div>
+      <div class="fg"><label>Nombre del dueño</label><input type="text" id="c-dueno" placeholder="Nombre completo"></div>
+      <div class="fg"><label>Teléfono</label><input type="text" id="c-tel" placeholder="+58 ..."></div>
+      <div class="fg"><label>Tipo de visita</label><select id="c-tipo"><option value="Consulta">Consulta</option><option value="Revisión">Revisión</option><option value="Emergencia">Emergencia</option></select></div>
+      <div class="fg"><label>Fecha y hora</label><input type="datetime-local" id="c-fecha"></div>
+      <div class="fg full"><label>Motivo</label><textarea id="c-motivo" placeholder="Describe el motivo..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="cerrarModal('modal-cita')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarCita()">Guardar cita</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PACIENTE -->
+<div class="modal-bg" id="modal-paciente">
+  <div class="modal">
+    <div class="modal-title">🐾 Nuevo paciente</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nombre del paciente</label><input type="text" id="p-nombre" placeholder="Ej: Firulais"></div>
+      <div class="fg"><label>Especie</label><select id="p-especie"><option>Perro</option><option>Gato</option><option>Exótico</option><option>Ave</option><option>Otro</option></select></div>
+      <div class="fg"><label>Raza</label><input type="text" id="p-raza" placeholder="Ej: Golden Retriever"></div>
+      <div class="fg"><label>Edad</label><input type="text" id="p-edad" placeholder="Ej: 3 años"></div>
+      <div class="fg"><label>Nombre del dueño</label><input type="text" id="p-dueno" placeholder="Nombre completo"></div>
+      <div class="fg"><label>Teléfono</label><input type="text" id="p-tel" placeholder="+58 ..."></div>
+      <div class="fg"><label>Peso (kg)</label><input type="text" id="p-peso" placeholder="Ej: 12.5"></div>
+      <div class="fg"><label>Alergias conocidas</label><input type="text" id="p-alergias" placeholder="Ninguna / Penicilina..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="cerrarModal('modal-paciente')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarPaciente()">Guardar paciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTA -->
+<div class="modal-bg" id="modal-nota">
+  <div class="modal">
+    <div class="modal-title">📋 Agregar nota de visita</div>
+    <div class="form-grid">
+      <div class="fg"><label>Tipo de visita</label><select id="n-tipo"><option value="Consulta">Consulta</option><option value="Revisión">Revisión</option><option value="Emergencia">Emergencia</option></select></div>
+      <div class="fg"><label>Fecha</label><input type="date" id="n-fecha"></div>
+      <div class="fg full"><label>Título / diagnóstico</label><input type="text" id="n-titulo" placeholder="Ej: Control de rutina y vacunación"></div>
+      <div class="fg full"><label>Notas clínicas</label><textarea id="n-nota" placeholder="Estado del paciente, tratamiento..."></textarea></div>
+      <div class="fg"><label>Peso en esta visita (kg)</label><input type="text" id="n-peso" placeholder="Opcional"></div>
+      <div class="fg"><label>Próximo control</label><input type="text" id="n-prox" placeholder="Ej: En 6 meses"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="cerrarModal('modal-nota')">Cancelar</button>
+      <button class="btn btn-p" onclick="guardarNota()">Guardar nota</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyBRZ1HdxXdH0rrZzPo5oXrq3EjKMQjRA8U",
+  authDomain: "clinicabot-bd658.firebaseapp.com",
+  projectId: "clinicabot-bd658",
+  storageBucket: "clinicabot-bd658.firebasestorage.app",
+  messagingSenderId: "938884262404",
+  appId: "1:938884262404:web:4248ff664b65049388a351"
+});
+const db = getFirestore(app);
+
+window._db = db; window._allCitas = []; window._allPacientes = [];
+window._pacienteActivo = null; window._filtroEspecie = 'todos';
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2800);
+}
+window.toast = toast;
+
+function avClass(esp) {
+  if (!esp) return 'at';
+  const e = esp.toLowerCase();
+  if (e==='perro') return 'ab'; if (e==='gato') return 'aa'; if (e==='ave') return 'ar'; return 'at';
+}
+function ini(n) { if (!n) return '?'; return n.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function fmtH(ts) { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'}); }
+function fmtF(ts) { if (!ts) return '–'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('es-VE',{day:'2-digit',month:'short',year:'numeric'}); }
+function badge(t) { const m={Consulta:'bc',Revisión:'br',Emergencia:'be'}; return `<span class="badge ${m[t]||'bc'}">${t}</span>`; }
+
+document.getElementById('fecha-hoy').textContent = new Date().toLocaleDateString('es-VE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+window.goTo = function(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const idx={dashboard:0,agenda:1,pacientes:2,historial:3,bot:4};
+  document.querySelectorAll('.nav-item')[idx[id]].classList.add('active');
+};
+
+window.abrirCita = function() {
+  document.getElementById('modal-cita').classList.add('open');
+  const now=new Date(); now.setMinutes(0,0,0);
+  document.getElementById('c-fecha').value=now.toISOString().slice(0,16);
+};
+window.abrirPaciente = function() { document.getElementById('modal-paciente').classList.add('open'); };
+window.abrirNota = function() {
+  document.getElementById('modal-nota').classList.add('open');
+  document.getElementById('n-fecha').value=new Date().toISOString().slice(0,10);
+};
+window.cerrarModal = function(id) { document.getElementById(id).classList.remove('open'); };
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+
+window.guardarCita = async function() {
+  const nombre=document.getElementById('c-nombre').value.trim();
+  const dueno=document.getElementById('c-dueno').value.trim();
+  if (!nombre||!dueno) { toast('⚠️ Completá nombre y dueño'); return; }
+  try {
+    await addDoc(collection(db,'citas'),{
+      paciente:nombre, especie:document.getElementById('c-especie').value,
+      dueno, telefono:document.getElementById('c-tel').value,
+      tipo:document.getElementById('c-tipo').value,
+      fecha:new Date(document.getElementById('c-fecha').value||Date.now()),
+      motivo:document.getElementById('c-motivo').value,
+      creado:serverTimestamp()
+    });
+    cerrarModal('modal-cita'); toast('✅ Cita guardada en Firebase');
+    ['c-nombre','c-dueno','c-tel','c-motivo'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { toast('❌ Error: '+e.message); }
+};
+
+window.guardarPaciente = async function() {
+  const nombre=document.getElementById('p-nombre').value.trim();
+  const dueno=document.getElementById('p-dueno').value.trim();
+  if (!nombre||!dueno) { toast('⚠️ Completá nombre y dueño'); return; }
+  try {
+    await addDoc(collection(db,'pacientes'),{
+      nombre, dueno, especie:document.getElementById('p-especie').value,
+      raza:document.getElementById('p-raza').value, edad:document.getElementById('p-edad').value,
+      telefono:document.getElementById('p-tel').value, peso:document.getElementById('p-peso').value,
+      alergias:document.getElementById('p-alergias').value, visitas:[], creado:serverTimestamp()
+    });
+    cerrarModal('modal-paciente'); toast('✅ Paciente guardado en Firebase');
+    ['p-nombre','p-raza','p-edad','p-dueno','p-tel','p-peso','p-alergias'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { toast('❌ Error: '+e.message); }
+};
+
+window.guardarNota = async function() {
+  if (!window._pacienteActivo) { toast('⚠️ No hay paciente seleccionado'); return; }
+  const titulo=document.getElementById('n-titulo').value.trim();
+  if (!titulo) { toast('⚠️ Agregá un título'); return; }
+  try {
+    await updateDoc(doc(db,'pacientes',window._pacienteActivo.id),{
+      visitas:arrayUnion({
+        tipo:document.getElementById('n-tipo').value, fecha:document.getElementById('n-fecha').value,
+        titulo, nota:document.getElementById('n-nota').value,
+        peso:document.getElementById('n-peso').value, proximo:document.getElementById('n-prox').value
+      })
+    });
+    cerrarModal('modal-nota'); toast('✅ Nota guardada');
+    ['n-titulo','n-nota','n-peso','n-prox'].forEach(id=>document.getElementById(id).value='');
+  } catch(e) { toast('❌ Error: '+e.message); }
+};
+
+function renderCitas(citas, elId) {
+  const el=document.getElementById(elId);
+  if (!citas.length) { el.innerHTML='<div class="empty">Sin citas registradas</div>'; return; }
+  el.innerHTML=citas.map(c=>{
+    const dot=c.tipo==='Emergencia'?'de':c.tipo==='Revisión'?'dr':'dc';
+    return `<div class="appt"><div class="adot ${dot}"></div>
+      <div class="a-info"><div class="a-name">${c.paciente} — ${c.especie||''}</div>
+      <div class="a-det">Dueño: ${c.dueno} &nbsp;${badge(c.tipo)}${c.motivo?'&nbsp;<span style="color:var(--text3)">'+c.motivo+'</span>':''}</div></div>
+      <div class="a-time">${fmtH(c.fecha)}<br><span style="font-size:10px;">${fmtF(c.fecha)}</span></div></div>`;
+  }).join('');
+}
+
+function renderPacs(pacs) {
+  const el=document.getElementById('pacientes-lista');
+  if (!pacs.length) { el.innerHTML='<div class="empty">Sin pacientes. Agregá el primero ↑</div>'; return; }
+  el.innerHTML=pacs.map(p=>`<div class="p-row" onclick="verHistorial('${p.id}')">
+    <div class="avatar ${avClass(p.especie)}">${ini(p.nombre)}</div>
+    <div style="flex:1;min-width:0;"><div class="pn">${p.nombre}</div>
+    <div class="ps">${p.especie||''}${p.raza?' · '+p.raza:''} · ${p.dueno}</div></div>
+    <div style="font-size:12px;color:var(--text3);flex-shrink:0;">Ver historial →</div></div>`).join('');
+}
+
+window.setFiltro = function(esp,el) {
+  document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); window._filtroEspecie=esp; filtrarPacientes();
+};
+window.filtrarPacientes = function() {
+  const q=document.getElementById('search-input').value.toLowerCase();
+  let f=window._allPacientes;
+  if (window._filtroEspecie!=='todos') f=f.filter(p=>p.especie===window._filtroEspecie);
+  if (q) f=f.filter(p=>p.nombre.toLowerCase().includes(q)||(p.dueno||'').toLowerCase().includes(q));
+  renderPacs(f);
+};
+
+window.verHistorial = function(id) {
+  const pac=window._allPacientes.find(p=>p.id===id);
+  if (!pac) return;
+  window._pacienteActivo=pac; cargarHistorial(pac); goTo('historial');
+};
+
+function cargarHistorial(pac) {
+  document.getElementById('hist-titulo').textContent='Historial — '+pac.nombre;
+  document.getElementById('hist-sub').textContent=`${pac.especie||''} · Dueño: ${pac.dueno}`;
+  document.getElementById('btn-nota').style.display='inline-flex';
+  document.getElementById('hist-content').style.display='grid';
+  document.getElementById('hist-empty').style.display='none';
+  const av=avClass(pac.especie);
+  document.getElementById('hist-ficha').innerHTML=`
+    <div class="profile-hdr">
+      <div class="avatar ${av} profile-av" style="width:56px;height:56px;font-size:20px;">${ini(pac.nombre)}</div>
+      <div><div class="profile-name">${pac.nombre}</div><div class="profile-sub">${pac.especie||''}${pac.raza?' · '+pac.raza:''} · ${pac.edad||'–'}</div></div>
+    </div>
+    <table class="info-tbl">
+      <tr><td>Dueño</td><td>${pac.dueno}</td></tr>
+      <tr><td>Teléfono</td><td style="color:var(--blue);">${pac.telefono||'–'}</td></tr>
+      <tr><td>Peso</td><td>${pac.peso?pac.peso+' kg':'–'}</td></tr>
+      <tr><td>Alergias</td><td style="color:var(--red);">${pac.alergias||'Ninguna'}</td></tr>
+      <tr><td>Visitas</td><td>${(pac.visitas||[]).length}</td></tr>
+    </table>`;
+  const vis=(pac.visitas||[]).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('hist-count').textContent=`(${vis.length})`;
+  document.getElementById('hist-visitas').innerHTML=vis.length
+    ? vis.map(v=>`<div class="h-item ${v.tipo==='Emergencia'?'em':''}">
+        <div class="h-meta">${v.fecha||'–'} · ${badge(v.tipo)}</div>
+        <div class="h-tit">${v.titulo}</div>
+        <div class="h-note">${v.nota||''}</div>
+        ${v.peso?`<div style="font-size:11px;color:var(--text3);margin-top:5px;">Peso: ${v.peso} kg${v.proximo?' · Próximo: '+v.proximo:''}</div>`:''}
+      </div>`).join('')
+    : '<div class="empty">Sin visitas registradas aún.</div>';
+}
+
+// Escucha en tiempo real — Citas
+onSnapshot(query(collection(db,'citas'),orderBy('creado','desc')),snap=>{
+  const citas=snap.docs.map(d=>({id:d.id,...d.data()}));
+  window._allCitas=citas;
+  const hoyStr=new Date().toDateString();
+  const hoy=citas.filter(c=>c.fecha&&(c.fecha.toDate?c.fecha.toDate():new Date(c.fecha)).toDateString()===hoyStr);
+  document.getElementById('m-hoy').textContent=hoy.length;
+  document.getElementById('m-emerg').textContent=citas.filter(c=>c.tipo==='Emergencia').length;
+  document.getElementById('m-total').textContent=citas.length;
+  renderCitas(hoy.length?hoy:citas.slice(0,5),'dash-citas');
+  renderCitas(citas,'agenda-lista');
+});
+
+// Escucha en tiempo real — Pacientes
+onSnapshot(query(collection(db,'pacientes'),orderBy('creado','desc')),snap=>{
+  const pacs=snap.docs.map(d=>({id:d.id,...d.data()}));
+  window._allPacientes=pacs;
+  document.getElementById('m-pac').textContent=pacs.length;
+  const el=document.getElementById('dash-pacs');
+  const ult=pacs.slice(0,4);
+  el.innerHTML=ult.length ? ult.map(p=>`<div class="p-row" onclick="verHistorial('${p.id}')">
+    <div class="avatar ${avClass(p.especie)}">${ini(p.nombre)}</div>
+    <div style="flex:1;"><div class="pn">${p.nombre}</div><div class="ps">${p.especie||''} · ${p.dueno}</div></div>
+    <div style="font-size:12px;color:var(--text3);">→</div></div>`).join('') : '<div class="empty">Sin pacientes aún</div>';
+  renderPacs(pacs);
+  if (window._pacienteActivo) {
+    const updated=pacs.find(p=>p.id===window._pacienteActivo.id);
+    if (updated) { window._pacienteActivo=updated; cargarHistorial(updated); }
+  }
+});
+
+// Bot WhatsApp demo
+window.enviarWA = function() {
+  const input=document.getElementById('wa-input');
+  const msg=input.value.trim(); if (!msg) return;
+  const cont=document.getElementById('wa-msgs');
+  input.value='';
+  cont.innerHTML+=`<div class="wm usr">${msg}<div class="wt">ahora</div></div>`;
+  setTimeout(()=>{
+    let resp='';
+    const m=msg.toLowerCase();
+    if (m.includes('historial')||m.includes('ficha')) {
+      const nombre=m.replace(/historial del?|ficha de/g,'').trim();
+      const pac=window._allPacientes.find(p=>p.nombre.toLowerCase().includes(nombre));
+      if (pac) {
+        const ult=(pac.visitas||[]).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha))[0];
+        resp=`📋 *${pac.nombre}* (${pac.especie||''})\nDueño: ${pac.dueno}\nPeso: ${pac.peso||'–'} kg\nAlergias: ${pac.alergias||'Ninguna'}\n\nÚltima visita: ${ult?ult.fecha+' — '+ult.titulo:'Sin visitas'}\nVisitas: ${(pac.visitas||[]).length}`;
+      } else resp=`No encontré al paciente "${nombre}". ¿Querés registrarlo?`;
+    } else if (m.includes('emergencia')||m.includes('urgente')||m.includes('urgencia')) {
+      resp='🚨 *EMERGENCIA REGISTRADA*\n\nEstamos notificando al veterinario de turno ahora mismo.\n\nDirigite a la clínica de inmediato.';
+    } else if (m.includes('turno')||m.includes('cita')||m.includes('consulta')||m==='1') {
+      resp='📅 Para agendar necesito:\n1. Nombre de tu mascota\n2. Tipo de visita\n3. Tu nombre y teléfono';
+    } else if (m.includes('mis turno')||m.includes('mis cita')||m==='2') {
+      const rec=window._allCitas.slice(0,3);
+      resp=rec.length ? '📋 Citas recientes:\n\n'+rec.map(c=>`• ${c.paciente} — ${c.tipo}`).join('\n') : 'No hay citas registradas.';
+    } else if (m==='3') {
+      resp='Escribí: "historial de [nombre de la mascota]"\nEj: "historial del chancho"';
+    } else if (m==='4') {
+      resp='🚨 ¿Es una emergencia con tu mascota?\nEscribí EMERGENCIA para alertar al veterinario.';
+    } else {
+      resp='No entendí bien 😅\n\n1️⃣ Agendar cita\n2️⃣ Ver mis turnos\n3️⃣ Historial de mascota\n4️⃣ Es una emergencia';
+    }
+    cont.innerHTML+=`<div class="wm bot">${resp.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}<div class="wt">ahora</div></div>`;
+    cont.scrollTop=cont.scrollHeight;
+  },700);
+  cont.scrollTop=cont.scrollHeight;
+};
+</script>
+</body>
+</html>
